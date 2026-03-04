@@ -1,0 +1,89 @@
+---
+title: "TicketPOS setup"
+description: "Configure events, ticket types, and gates using the AG | TicketPOS API inside Roblox."
+---
+
+## Prerequisites
+
+- You have a Roblox place where the event or venue will run.
+- You have imported the `AG | TicketPOS` folder into the game.
+- You know which areas should be gated behind tickets.
+
+## Step 1: Define events
+
+Each event represents something that requires a ticket:
+
+- A one-time concert.
+- A daily show.
+- Access to a specific world region or game mode.
+
+Recommended fields:
+
+- **Id** – stable identifier (for example, `concert_2025_07_01`).  
+- **Name** – human-readable label.  
+- **Start / end time** – if time-limited.  
+- **Capacity** – optional limit on attendees.
+
+How you store events is up to your implementation (e.g., ModuleScript config, DataStore, or server-side config script). TicketPOS focuses on ticket creation and validation.
+
+## Step 2: Configure ticket types
+
+Ticket types group rules for pricing and access.
+
+Common patterns:
+
+- **General admission** – standard access.  
+- **VIP** – extra perks or separate areas.  
+- **Staff** – full access for moderators or staff.
+
+For each ticket type, decide:
+
+- Which events it applies to.  
+- Price and currency (in-game, Robux, etc.).  
+- Any restrictions (for example, one per user).
+
+## Step 3: Wire the API object
+
+The `AG | TicketPOS` folder exposes an `API` object that you call from your own scripts.
+
+Typical structure inside `AG | TicketPOS` (this may differ in your build):
+
+- A ModuleScript or Folder named `API`.
+- BindableEvents / RemoteEvents for actions such as creating tickets, checking in, and revoking access.
+
+Example pattern from a server script:
+
+```lua
+local TicketPOS = workspace["AG | TicketPOS"]
+local API = TicketPOS:WaitForChild("API")
+
+local function grantTicket(player, eventId, ticketTypeId)
+  local createTicketEvent = API:WaitForChild("CreateTicket")
+
+  createTicketEvent:Fire(player, {
+    eventId = eventId,
+    ticketTypeId = ticketTypeId,
+  })
+end
+```
+
+Update the event names to match your actual `API` implementation.
+
+## Step 4: Configure gates
+
+Gates are the points where you check tickets.
+
+Examples:
+
+- A door to the concert hall.  
+- A teleport pad to a VIP lounge.  
+- A region trigger around the event area.
+
+For each gate, define:
+
+- Which **event** and **ticket types** are required.  
+- What happens on **allow** (open door, teleport, play effects).  
+- What happens on **deny** (message, redirect, optional log).
+
+You will connect gates to TicketPOS in [TicketPOS operations](/ticketpos/operations).
+

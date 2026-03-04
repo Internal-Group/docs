@@ -1,0 +1,89 @@
+---
+title: "TicketPOS operations"
+description: "Sell tickets, validate access at gates, and manage entitlements using AG | TicketPOS."
+---
+
+## Ticket lifecycle
+
+A typical TicketPOS ticket moves through these stages:
+
+1. **Issued** – a ticket has been created for a player.  
+2. **Active** – the ticket is valid for entry.  
+3. **Used** – a single-use ticket has been redeemed at a gate.  
+4. **Revoked / Expired** – the ticket is no longer valid.
+
+You control these transitions via events on the `API` object in `AG | TicketPOS`.
+
+## Selling or granting tickets
+
+Ticket creation can happen in different ways:
+
+- Purchased by the player via a UI.  
+- Granted as a reward or staff permission.  
+- Imported from an external system.
+
+Example pattern to grant a ticket:
+
+```lua
+local TicketPOS = workspace["AG | TicketPOS"]
+local API = TicketPOS:WaitForChild("API")
+
+local function giveVipTicket(player)
+  local createTicketEvent = API:WaitForChild("CreateTicket")
+
+  createTicketEvent:Fire(player, {
+    eventId = "concert_2025_07_01",
+    ticketTypeId = "vip",
+  })
+end
+```
+
+## Gate checks
+
+Gates decide whether a player can pass based on their tickets.
+
+Example pattern from a server script attached to a door or zone:
+
+```lua
+local function canEnter(player, eventId, requiredTicketType)
+  local checkTicketEvent = API:WaitForChild("CheckTicket")
+  local result = checkTicketEvent:Invoke(player, {
+    eventId = eventId,
+    ticketTypeId = requiredTicketType,
+  })
+
+  -- `result.allowed` and `result.reason` are example fields
+  return result and result.allowed, result and result.reason
+end
+```
+
+You can then open doors or teleport players based on the result.
+
+## Revoking access
+
+Sometimes you need to revoke a ticket:
+
+- Player refunded.  
+- Moderation action.  
+- Event cancelled.
+
+Example pattern:
+
+```lua
+local function revokeTicketsForPlayer(player, eventId)
+  local revokeEvent = API:WaitForChild("RevokeTickets")
+
+  revokeEvent:Fire(player, {
+    eventId = eventId,
+  })
+end
+```
+
+The exact event names and payloads depend on your implementation; use these examples as a pattern and align them with your actual `API` object.
+
+## Operational best practices
+
+- Log ticket creation and revocation so you can audit who had access.  
+- Use clear messages when access is denied at a gate.  
+- Combine TicketPOS with Dynaban risk scores to deny access for high-risk players before they reach sensitive areas.
+

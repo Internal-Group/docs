@@ -1,0 +1,117 @@
+---
+title: "RestaurantPOS operations"
+description: "Run day-to-day RestaurantPOS operations: ordering, payment, and fulfillment."
+---
+
+## Order lifecycle
+
+A typical RestaurantPOS order moves through these stages:
+
+1. **Draft** – items added to a cart but not yet submitted.
+2. **Pending payment** – order created, waiting for payment confirmation.
+3. **Preparing** – kitchen or staff are working on the order.
+4. **Ready** – order is ready for pickup or delivery.
+5. **Completed / Cancelled** – final state.
+
+You drive these state changes from Roblox via events on the `API` object in `AG | RestaurantPOS`.
+
+## Creating orders from Roblox
+
+Use the `API` object provided by `AG | RestaurantPOS` to create orders from your UI.
+
+Example pattern:
+
+```lua
+local RestaurantPOS = workspace["AG | RestaurantPOS"]
+local API = RestaurantPOS:WaitForChild("API")
+
+local function createOrder(player, cart)
+  local createOrderEvent = API:WaitForChild("CreateOrder")
+
+  createOrderEvent:Fire(player, {
+    locationId = cart.locationId,
+    registerId = cart.registerId,
+    lineItems = cart.lineItems,
+  })
+end
+```
+
+## Handling payment
+
+Payment handling depends on your monetization model:
+
+- **In-game currency** – deduct balances in your own economy system, then mark the order **paid**.  
+- **Robux (passes/products)** – initiate the purchase flow, then update the order on success.
+
+RestaurantPOS scripts usually expose an event to confirm payment for an order.
+
+Example pattern:
+
+```lua
+local function confirmPayment(orderId, paymentReference)
+  local confirmPaymentEvent = API:WaitForChild("ConfirmPayment")
+
+  confirmPaymentEvent:Fire({
+    orderId = orderId,
+    paymentReference = paymentReference,
+  })
+end
+```
+- Once an order reaches **Preparing** or **Ready**, your game should:
+-
+- Grant items (tools, cosmetics, buffs).  
+- Update UI (order status boards, notifications).  
+- Optionally log analytics or audit events.
+-
+- You can poll order status, or subscribe to webhooks in your backend and bridge changes into the game.
+-
+- ## Operational best practices
+-
+- - Use **sandbox** for all flows until you have covered edge cases like failed payments and disconnects.  
+- - Always validate **userId** and **placeId** when creating or updating orders.  
+- - Log key events around orders to help you debug issues in live experiences.
+-
+- For API details on the underlying endpoints, see the RestaurantPOS-related routes in your [API reference](/api-reference/introduction).
+Once an order reaches **Preparing** or **Ready**, your game should:
+
+- Grant items (tools, cosmetics, buffs).  
+- Update UI (order status boards, notifications).  
+- Optionally log analytics or audit events.
+
+Most implementations expose events such as `OrderStatusChanged` from the `API` object so you can react:
+
+```lua
+local statusChanged = API:WaitForChild("OrderStatusChanged")
+
+statusChanged.Event:Connect(function(order)
+  if order.status == "READY" then
+    -- Grant items and update UI here
+  end
+end)
+```
+
+## Operational best practices
+
+- Use **sandbox**-style places for testing until you have covered edge cases like failed payments and disconnects.  
+- Always validate **userId** and **placeId** when creating or updating orders.  
+- Log key events around orders to help you debug issues in live experiences.
+
+
+## Fulfilling orders
+
+Once an order reaches **Preparing** or **Ready**, your game should:
+
+- Grant items (tools, cosmetics, buffs).  
+- Update UI (order status boards, notifications).  
+- Optionally log analytics or audit events.
+
+You can poll order status, or subscribe to webhooks in your backend and bridge changes into the game.
+
+## Operational best practices
+
+- Use **sandbox** for all flows until you have covered edge cases like failed payments and disconnects.  
+- Always validate **userId** and **placeId** when creating or updating orders.  
+- Log key events around orders to help you debug issues in live experiences.
+
+For API details on the underlying endpoints, see the RestaurantPOS-related routes in your [API reference](/api-reference/introduction).
+

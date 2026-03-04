@@ -1,0 +1,35 @@
+---
+title: "EasyAPI overview"
+description: "Call Aware APIs such as Dynaban and Atlas from Roblox Lua without writing raw HTTP requests."
+---
+
+## What EasyAPI does
+
+EasyAPI is a small Lua helper that lives inside your Roblox game and talks to Aware APIs on your behalf.
+
+You use it to:
+
+- Call backend endpoints like **Dynaban** for risk scoring.  
+- Plan integrations with **Atlas** licenses.  
+- Reach any other Aware HTTP APIs you expose.
+
+EasyAPI handles:
+
+- Building correct HTTP requests.  
+- Including authentication headers.  
+- Returning decoded JSON responses to your Lua code.
+
+## When to use EasyAPI vs. in-game APIs
+
+- Use **EasyAPI** when you want to talk to Aware’s HTTP APIs (Dynaban, Atlas, custom services).  
+- Use **`AG | RestaurantPOS`** and **`AG | TicketPOS`** when you want in-game POS and ticketing flows driven by events and scripts inside Roblox.
+
+## High-level flow
+
+1. You create an Aware project and API key.  
+2. You install the EasyAPI ModuleScript in your Roblox game.  
+3. Your server scripts construct a client and call named operations such as `dynaban.evaluate`.  
+4. EasyAPI sends HTTPS requests to Aware and returns structured responses.
+
+Continue with [EasyAPI Lua setup](/easyapi/lua-setup) to install the module, then see [EasyAPI examples](/easyapi/examples) for common patterns.
+

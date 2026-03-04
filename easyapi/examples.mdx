@@ -1,0 +1,111 @@
+---
+title: "EasyAPI examples"
+description: "Practical Roblox Lua examples for calling Dynaban and other Aware APIs via EasyAPI."
+---
+
+## Evaluate player risk with Dynaban
+
+Use Dynaban to assign a risk score to a player and enforce actions at score thresholds.
+
+```lua
+local EasyAPI = require(game.ServerScriptService.EasyAPI)
+
+local client = EasyAPI.new({
+  projectId = "your-project-id",
+  apiKey = "your-server-api-key",
+  environment = "sandbox",
+})
+
+local function evaluatePlayer(player)
+  local result, err = client:call("dynaban/v1/evaluate", {
+    userId = player.UserId,
+    placeId = game.PlaceId,
+  })
+
+  if err then
+    warn("Dynaban request failed", err.message or err)
+    return
+  end
+
+  local risk = result.riskScore
+
+  if risk >= 70 then
+    player:Kick("Your account has been banned by Aware.")
+  elseif risk >= 50 then
+    player:Kick("Your account has been flagged by Aware.")
+  end
+end
+```
+
+This example uses thresholds:
+
+- **Kick** at scores \(\ge 50\).  
+- **Ban** at scores \(\ge 70\).
+
+Tune thresholds and messages to match your moderation policy.
+
+## Bulk evaluating multiple players
+
+You might want to evaluate a group of players at once, for example when a server starts.
+
+```lua
+local function evaluateAllPlayers()
+  local payload = {
+    players = {},
+  }
+
+  for _, player in ipairs(game.Players:GetPlayers()) do
+    table.insert(payload.players, {
+      userId = player.UserId,
+      placeId = game.PlaceId,
+    })
+  end
+
+  local result, err = client:call("dynaban/v1/bulk-evaluate", payload)
+
+  if err then
+    warn("Bulk Dynaban request failed", err.message or err)
+    return
+  end
+
+  for _, entry in ipairs(result.players or {}) do
+    local player = game.Players:GetPlayerByUserId(entry.userId)
+    if player then
+      local risk = entry.riskScore
+
+      if risk >= 70 then
+        player:Kick("Your account has been banned by Aware.")
+      elseif risk >= 50 then
+        player:Kick("Your account has been flagged by Aware.")
+      end
+    end
+  end
+end
+```
+
+## Planning for Atlas licenses (coming soon)
+
+Atlas is a license portal for controlling who can access features or experiences.
+
+Even before Atlas is live, you can decide where license checks will go in your code.
+
+Example pattern (pseudo-code until Atlas is available):
+
+```lua
+local function canUseFeature(player, featureId)
+  local response, err = client:call("atlas/v1/licenses/check", {
+    userId = player.UserId,
+    featureId = featureId,
+  })
+
+  if err then
+    -- Fallback: deny or allow conservatively depending on your policy
+    return false
+  end
+
+  return response.allowed == true
+end
+```
+
+Update the operation name and payload once you have the final Atlas API.
+

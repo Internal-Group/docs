@@ -1,0 +1,98 @@
+---
+title: "EasyAPI Lua setup"
+description: "Install and configure the EasyAPI ModuleScript so you can call Aware APIs from Roblox."
+---
+
+## Prerequisites
+
+- An Aware **project** created in your dashboard.  
+- An **API key** for your sandbox environment.  
+- A Roblox experience where you can add server scripts.
+
+## Step 1: Add the EasyAPI module
+
+Add the EasyAPI ModuleScript to one of:
+
+- `ServerScriptService`  
+- `ReplicatedStorage` (and require it from server scripts)
+
+Name it something clear such as `EasyAPI`.
+
+## Step 2: Configure the client
+
+The EasyAPI module should expose a simple constructor.  
+The pattern used throughout these docs looks like this:
+
+```lua
+local EasyAPI = require(game.ServerScriptService.EasyAPI)
+
+local client = EasyAPI.new({
+  projectId = "your-project-id",
+  apiKey = "your-server-api-key",
+  environment = "sandbox", -- or "production"
+})
+```
+
+Your implementation can choose whether `projectId`, `apiKey`, and `environment` are passed in like this or loaded from a central config module.
+
+## Step 3: Implement the HTTP call helper
+
+Inside your EasyAPI ModuleScript, you will implement a generic `:call` helper that all operations go through.
+
+Example implementation outline:
+
+```lua
+local HttpService = game:GetService("HttpService")
+
+local EasyAPI = {}
+EasyAPI.__index = EasyAPI
+
+function EasyAPI.new(config)
+  local self = setmetatable({}, EasyAPI)
+
+  self.projectId = config.projectId
+  self.apiKey = config.apiKey
+  self.environment = config.environment or "sandbox"
+  self.baseUrl = "https://api.aware.example" -- update to your real base URL
+
+  return self
+end
+
+function EasyAPI:call(operation, payload)
+  local url = string.format("%s/%s", self.baseUrl, operation)
+
+  local ok, result = pcall(function()
+    return HttpService:RequestAsync({
+      Url = url,
+      Method = "POST",
+      Headers = {
+        ["Content-Type"] = "application/json",
+        ["Authorization"] = "Bearer " .. self.apiKey,
+        ["X-Aware-Project"] = self.projectId,
+        ["X-Aware-Environment"] = self.environment,
+      },
+      Body = HttpService:JSONEncode(payload or {}),
+    })
+  end)
+
+  if not ok or not result.Success then
+    return nil, {
+      message = "HTTP error",
+      statusCode = result and result.StatusCode,
+      raw = result,
+    }
+  end
+
+  local decoded = HttpService:JSONDecode(result.Body)
+  return decoded, nil
+end
+
+return EasyAPI
+```
+
+Update the `baseUrl` and header names to match your real backend.
+
+## Step 4: Test with Dynaban
+
+Once the module is wired, make a test call to Dynaban as shown in the [Quickstart](/quickstart) or [EasyAPI examples](/easyapi/examples).
+

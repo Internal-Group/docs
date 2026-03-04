@@ -1,0 +1,42 @@
+---
+title: "TicketPOS overview"
+description: "Understand how TicketPOS handles ticket sales, check-in, and entitlements inside your Roblox experience."
+---
+
+## What TicketPOS does
+
+TicketPOS powers ticketing flows for events and venues inside your Roblox experience.
+
+You use it to:
+
+- **Sell tickets** – one-time, recurring, or time-limited access.
+- **Validate entry** – control who can enter gates, doors, or regions.
+- **Manage entitlements** – grant or revoke access levels such as VIP or staff.
+
+TicketPOS runs fully inside your Roblox game via the `AG | TicketPOS` folder.  
+You do **not** need to manage HTTP requests or API keys to use TicketPOS itself.
+
+## Core concepts
+
+- **Event** – a concert, session, or experience where tickets are required.
+- **Ticket type** – combinations of access and pricing (for example, General, VIP, Staff).
+- **Entitlement** – the actual access granted to a player for a specific event.
+- **Gate** – a check-in point such as a door, portal, or zone.
+
+## High-level architecture
+
+At a high level:
+
+1. You install the `AG | TicketPOS` content into your Roblox place.  
+2. UI or physical gates call the `API` object inside `AG | TicketPOS`.  
+3. The TicketPOS scripts manage ticket records and entitlements.  
+4. Your game listens for events fired by the `API` to allow or deny access.
+
+If you later introduce Atlas for licenses, TicketPOS entitlements can complement those licenses, but TicketPOS core flows remain event-driven inside Roblox.
+
+## Next steps
+
+- Start with [TicketPOS setup](/ticketpos/setup).  
+- Then integrate gates and flows in [TicketPOS operations](/ticketpos/operations).  
+- To combine with HTTP APIs and EasyAPI, see [EasyAPI overview](/easyapi/overview).
+

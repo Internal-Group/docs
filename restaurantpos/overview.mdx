@@ -1,0 +1,44 @@
+---
+title: "RestaurantPOS overview"
+description: "Understand the RestaurantPOS components and how they fit into your experience."
+---
+
+## What RestaurantPOS does
+
+RestaurantPOS powers ordering and payment flows for restaurants and concessions inside your Roblox experience.
+
+You use it to:
+
+- **Define locations** – restaurants, bars, kiosks, and other points of sale.
+- **Manage menus** – items, categories, modifiers, and pricing.
+- **Operate registers** – in-world terminals or UI that staff or players use.
+- **Track orders** – from placement through preparation to completion.
+
+RestaurantPOS runs fully inside your Roblox game via the `AG | RestaurantPOS` folder.  
+You do **not** need to manage HTTP requests or API keys to use RestaurantPOS itself.
+
+## Core concepts
+
+- **Project** – your Aware project that groups all RestaurantPOS and TicketPOS data.
+- **Location** – an individual restaurant or stand in your experience.
+- **Register** – a specific checkout surface (for example, “Front counter #1”).
+- **Menu item** – a purchasable item (for example, “Burger”, “Soda”).
+- **Order** – a single transaction created when a player checks out.
+
+## Typical architecture
+
+At a high level:
+
+1. You install the `AG | RestaurantPOS` content into your Roblox place.  
+2. UI in Roblox collects order details and calls the `API` object inside `AG | RestaurantPOS`.  
+3. The RestaurantPOS scripts handle order state and persistence.  
+4. Your game grants items or experiences based on events fired by the `API`.
+
+If you also use Dynaban or Atlas, those use Aware HTTP APIs and EasyAPI, but RestaurantPOS itself is event-driven inside Roblox.
+
+## Next steps
+
+- Start with [RestaurantPOS setup](/restaurantpos/setup).  
+- Then implement flows in [RestaurantPOS operations](/restaurantpos/operations).  
+- For Lua integration, combine it with [EasyAPI overview](/easyapi/overview).
+

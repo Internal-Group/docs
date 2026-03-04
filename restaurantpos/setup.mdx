@@ -1,0 +1,102 @@
+---
+title: "RestaurantPOS setup"
+description: "Create locations, menus, and registers so you can start taking orders."
+---
+
+## Prerequisites
+
+- You have a Roblox place where the restaurant will live.
+- You have imported the `AG | RestaurantPOS` folder into the game.
+- You know which places and servers will host your restaurant experience.
+
+## Step 1: Create locations
+
+Each physical (or virtual) restaurant is a **location**.
+
+Typical mapping:
+
+- One location per map area with its own staff.
+- Separate locations for lobby kiosks vs. in-restaurant seating if they have different menus.
+
+<Steps>
+  <Step title="Define locations">
+    - Name the location clearly (for example, **Main Lobby Restaurant**).  
+    - Attach metadata such as place IDs or universe IDs if you plan to use them in automation.  
+    - Mark whether the location is **sandbox** or **production**.
+  </Step>
+</Steps>
+
+## Step 2: Build your menu
+
+RestaurantPOS menus are composed of categories and items.
+
+Recommended structure:
+
+- **Categories** – Burgers, Drinks, Desserts, Combos.
+- **Items** – Each purchasable entry.
+- **Modifiers** – Options such as size, flavor, add-ons.
+
+<Steps>
+  <Step title="Create categories and items">
+    1. For each location, list the categories you will expose in the UI.  
+    2. For each item, define:
+       - Name and description.  
+       - Price and currency (for example, in-game currency or Robux pass).  
+       - Modifiers and default options.  
+    3. Decide which items are **sandbox-only** vs. shared with production.
+  </Step>
+</Steps>
+
+## Step 3: Configure registers
+
+Registers are the specific entry points where orders are placed.
+
+Examples:
+
+- `main_lobby_counter_1`
+- `drive_thru_window`
+- `vip_lounge_bar`
+
+How you represent registers depends on your implementation:
+
+- A ScreenGui terminal per register.
+- A physical model with a ProximityPrompt.
+
+For each register, define:
+
+- The **location** it belongs to.
+- Supported **payment methods** (for example, game passes, developer products, in-game currency).
+- Any **access rules** (for example, VIP-only registers).
+
+## Step 4: Wire the API object
+
+The `AG | RestaurantPOS` folder exposes an `API` object that you call from your own scripts.
+
+Typical structure inside `AG | RestaurantPOS` (this may differ in your build):
+
+- A ModuleScript or Folder named `API`.
+- BindableEvents / RemoteEvents for key actions such as creating orders and reacting to status changes.
+
+Example pattern from a server script:
+
+```lua
+local RestaurantPOS = workspace["AG | RestaurantPOS"]
+local API = RestaurantPOS:WaitForChild("API")
+
+local function openOrder(player, cart)
+  -- Example event name; update to match your actual API
+  local createOrderEvent = API:WaitForChild("CreateOrder")
+
+  createOrderEvent:Fire(player, {
+    locationId = "main-lobby-restaurant",
+    registerId = "counter-1",
+    lineItems = cart.lineItems,
+  })
+end
+```
+
+You also listen for events fired by `API` to know when orders are created or updated.  
+The concrete event names depend on your implementation; use this as a pattern and update with your real event names.
+
+From here you handle payment confirmation and delivery, which is covered in [RestaurantPOS operations](/restaurantpos/operations).
+
